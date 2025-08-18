@@ -4,8 +4,6 @@ on:
   push:
     branches: [ main ]
     tags: [ 'v*' ]
-  pull_request:
-    branches: [ main ]
 
 jobs:
   build:
@@ -18,11 +16,11 @@ jobs:
             target: x86_64-unknown-linux-gnu
             binary_suffix: ""
             asset_name: flyx-linux-amd64
-          - os: macos-latest
+          - os: macos-13
             target: x86_64-apple-darwin
             binary_suffix: ""
             asset_name: flyx-macos-amd64
-          - os: macos-latest
+          - os: macos-14
             target: aarch64-apple-darwin
             binary_suffix: ""
             asset_name: flyx-macos-arm64
@@ -32,46 +30,37 @@ jobs:
             asset_name: flyx-windows-amd64.exe
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v5
 
-    - name: Setup Rust
-      uses: dtolnay/rust-toolchain@stable
-      with:
-        targets: ${{ matrix.target }}
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
 
-    - name: Cache cargo registry
-      uses: actions/cache@v3
-      with:
-        path: ~/.cargo/registry
-        key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+      - name: Cache Rust dependencies and build
+        uses: Swatinem/rust-cache@v2
+        with:
+          cache-on-failure: true
+          shared-key: "rust-${{ matrix.target }}"
+          key: "build-${{ matrix.target }}"
 
-    - name: Cache cargo index
-      uses: actions/cache@v3
-      with:
-        path: ~/.cargo/git
-        key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.lock') }}
+      - name: Build flyx client
+        run: cargo build --release --bin client --target ${{ matrix.target }}
 
-    - name: Cache cargo build
-      uses: actions/cache@v3
-      with:
-        path: target
-        key: ${{ runner.os }}-${{ matrix.target }}-cargo-build-${{ hashFiles('**/Cargo.lock') }}
+      - name: Prepare binary
+        shell: bash
+        run: |
+          mkdir -p dist
+          cp target/${{ matrix.target }}/release/client${{ matrix.binary_suffix }} dist/${{ matrix.asset_name }}
 
-    - name: Build flyx client
-      run: cargo build --release --bin client --target ${{ matrix.target }}
-
-    - name: Prepare binary
-      shell: bash
-      run: |
-        mkdir -p dist
-        cp target/${{ matrix.target }}/release/client${{ matrix.binary_suffix }} dist/${{ matrix.asset_name }}
-
-    - name: Upload artifacts
-      uses: actions/upload-artifact@v3
-      with:
-        name: ${{ matrix.asset_name }}
-        path: dist/${{ matrix.asset_name }}
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.asset_name }}
+          path: dist/${{ matrix.asset_name }}
+          if-no-files-found: error
+          retention-days: 30
 
   release:
     name: Create Release
@@ -79,41 +68,42 @@ jobs:
     needs: build
     if: startsWith(github.ref, 'refs/tags/v')
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v5
 
-    - name: Download all artifacts
-      uses: actions/download-artifact@v3
-      with:
-        path: ./dist
+      - name: Download all artifacts
+        uses: actions/download-artifact@v5
+        with:
+          path: ./dist
 
-    - name: Prepare release assets
-      run: |
-        cd dist
-        # Make binaries executable
-        chmod +x flyx-*/{flyx-linux-amd64,flyx-macos-amd64,flyx-macos-arm64}
-        
-        # Move binaries to root and create archives
-        for dir in */; do
-          binary_name=$(basename "$dir")
-          mv "$dir/$binary_name" ./
-          if [[ "$binary_name" == *.exe ]]; then
-            zip "${binary_name%.exe}.zip" "$binary_name"
-          else
-            tar -czf "${binary_name}.tar.gz" "$binary_name"
-          fi
-        done
-        
-        ls -la *.{tar.gz,zip}
+      - name: Prepare release assets
+        run: |
+          cd dist
+          # Move binaries to root and create archives
+          for dir in */; do
+            binary_name=$(basename "$dir")
+            mv "$dir/$binary_name" ./
+            if [[ "$binary_name" == *.exe ]]; then
+              zip "${binary_name%.exe}.zip" "$binary_name"
+            else
+              tar -czf "${binary_name}.tar.gz" "$binary_name"
+            fi
+          done
 
-    - name: Create Release
-      uses: softprops/action-gh-release@v1
-      with:
-        files: |
-          dist/*.tar.gz
-          dist/*.zip
-        draft: false
-        prerelease: false
-        generate_release_notes: true
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Generate checksums
+          sha256sum *.tar.gz *.zip > checksums.sha256
+
+          ls -la *.{tar.gz,zip,sha256}
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/*.tar.gz
+            dist/*.zip
+            dist/checksums.sha256
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
