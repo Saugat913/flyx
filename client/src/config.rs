@@ -20,6 +20,24 @@ pub struct TransferConfig {
     pub download_path: String,
 }
 
+impl Config {
+    fn default_download_path() -> String {
+        if cfg!(target_os = "windows") {
+            std::env::var("USERPROFILE")
+                .map(|home| format!("{}\\Downloads", home))
+                .unwrap_or_else(|_| "C:\\Users\\Downloads".to_string())
+        } else if cfg!(target_os = "macos") {
+            std::env::var("HOME")
+                .map(|home| format!("{}/Downloads", home))
+                .unwrap_or_else(|_| "/Users/Downloads".to_string())
+        } else {
+            std::env::var("HOME")
+                .map(|home| format!("{}/Downloads", home))
+                .unwrap_or_else(|_| "/home/Downloads".to_string())
+        }
+    }
+}
+
 impl Default for Config {
     fn default() -> Self {
         Self {
@@ -30,7 +48,7 @@ impl Default for Config {
             transfer: TransferConfig {
                 //8 kB
                 chunk_size: 8192,
-                download_path: "~/Downloads/".to_string(),
+                download_path: Self::default_download_path(),
             },
         }
     }

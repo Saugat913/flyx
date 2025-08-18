@@ -44,8 +44,7 @@ jobs:
       - name: Build client
         shell: bash
         run: |
-          cd client
-          cargo build --release --target ${{ matrix.target }}
+          cargo build --release --target ${{ matrix.target }} --manifest-path client/Cargo.toml
 
       - name: Prepare binary
         shell: bash
@@ -54,12 +53,16 @@ jobs:
           
           # Set binary name and extension
           if [[ "${{ matrix.platform }}" == *windows* ]]; then
-            BINARY_NAME="flyx-client-${{ matrix.platform }}.exe"
-            SOURCE_BINARY="client/target/${{ matrix.target }}/release/client.exe"
+            BINARY_NAME="flyx-${{ matrix.platform }}.exe"
+            SOURCE_BINARY="target/${{ matrix.target }}/release/flyx.exe"
           else
-            BINARY_NAME="flyx-client-${{ matrix.platform }}"
-            SOURCE_BINARY="client/target/${{ matrix.target }}/release/client"
+            BINARY_NAME="flyx-${{ matrix.platform }}"
+            SOURCE_BINARY="target/${{ matrix.target }}/release/flyx"
           fi
+          
+          # Debug: Show what was actually built
+          echo "Looking for binary at: $SOURCE_BINARY"
+          ls -la target/${{ matrix.target }}/release/ || echo "Release directory not found"
           
           # Copy and rename binary
           cp "$SOURCE_BINARY" "artifacts/$BINARY_NAME"
@@ -72,8 +75,8 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: flyx-client-${{ matrix.platform }}
-          path: artifacts/flyx-client-${{ matrix.platform }}*
+          name: flyx-${{ matrix.platform }}
+          path: artifacts/flyx-${{ matrix.platform }}*
           if-no-files-found: error
           retention-days: 7
 
@@ -109,7 +112,7 @@ jobs:
               echo "Processing artifact: $artifact_name"
               
               # Find the binary file in the artifact directory
-              binary_file=$(find "$artifact_dir" -type f -name "flyx-client-*" | head -n1)
+              binary_file=$(find "$artifact_dir" -type f -name "flyx-*" | head -n1)
               
               if [[ -n "$binary_file" ]]; then
                 binary_name=$(basename "$binary_file")
@@ -165,15 +168,15 @@ jobs:
             Cross-platform binaries for the Flyx client.
             
             ### Downloads:
-            - **Linux (x86_64)**: `flyx-client-linux-amd64.tar.gz`
-            - **macOS (ARM64)**: `flyx-client-macos-arm64.tar.gz`
-            - **Windows (x86_64)**: `flyx-client-windows-amd64.zip`
+            - **Linux (x86_64)**: `flyx-linux-amd64.tar.gz`
+            - **macOS (ARM64)**: `flyx-macos-arm64.tar.gz`
+            - **Windows (x86_64)**: `flyx-windows-amd64.zip`
             
             ### Installation:
             1. Download the appropriate archive for your platform
             2. Extract the binary
             3. Move to a directory in your PATH (optional)
-            4. Run `flyx-client --help` to get started
+            4. Run `flyx --help` to get started
             
             ### Verification:
             Use the provided `checksums.sha256` file to verify download integrity:
