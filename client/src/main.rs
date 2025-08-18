@@ -22,8 +22,7 @@ async fn main() -> anyhow::Result<()> {
 
 
     let config = Config::from_file(&config_path).await?;
-    println!("{:?}", cli);
-    println!("Config:{:?}", config);
+   
 
     match cli.command {
         cli::Commands::Send { filename, global } => {
