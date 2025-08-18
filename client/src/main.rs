@@ -20,7 +20,7 @@ async fn main() -> anyhow::Result<()> {
         _ => format!("{}/.config/flyxconfig.json", std::env::var("HOME")?),
     };
 
-    #[cfg(target_os = "linux")]
+
     let config = Config::from_file(&config_path).await?;
     println!("{:?}", cli);
     println!("Config:{:?}", config);
