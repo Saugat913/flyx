@@ -36,6 +36,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   flutter_svg: ^2.3.0
   hugeicons: ^1.2.0
+  go_router: ^18.0.2
 
 dev_dependencies:
   flutter_test:
