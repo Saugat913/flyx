@@ -19,4 +19,5 @@ abstract final class AppRadius {
   static const chip = BorderRadius.all(Radius.circular(999));
   static const sheet = BorderRadius.vertical(top: Radius.circular(20));
   static const tile = BorderRadius.all(Radius.circular(12));
+  static const icon = BorderRadius.all(Radius.circular(8));
 }
