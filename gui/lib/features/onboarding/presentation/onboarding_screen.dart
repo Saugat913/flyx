@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flyx/core/media/images.dart';
+import 'package:flyx/core/route/route_config.dart';
+import 'package:flyx/core/route/route_navigation.dart';
 import 'package:flyx/core/theme/app_dimensions.dart';
 import 'package:flyx/core/theme/app_theme.dart';
 import 'package:flyx/features/shared/widgets/responsive_content_wrapper.dart';
@@ -11,6 +13,7 @@ class OnboardingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeBrightness = Theme.of(context).brightness;
     return Scaffold(
       body: SafeArea(
         child: ResponsiveContentWrapper(
@@ -22,17 +25,22 @@ class OnboardingScreen extends StatelessWidget {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Flexible(
-                        child: ConstrainedBox(
-                          constraints: const BoxConstraints(
-                            maxHeight: 200,
-                            maxWidth: 200,
-                          ),
-                          child: SvgPicture.asset(
-                            AppImage.logo,
-                            fit: BoxFit.contain,
-                          ),
-                        ),
+                      LayoutBuilder(
+                        builder: (context, constraints) {
+                          final size = (constraints.maxWidth * 0.6).clamp(
+                            160.0,
+                            240.0,
+                          );
+                          return SizedBox(
+                            width: size,
+                            height: size,
+                            child: SvgPicture.asset(
+                              AppImage.onboarding2,
+                              fit: BoxFit.contain,
+                              colorMapper: AppImage.colorMapper(themeBrightness),
+                            ),
+                          );
+                        },
                       ),
                       const SizedBox(height: AppSpace.section),
                       Text(
@@ -55,16 +63,19 @@ class OnboardingScreen extends StatelessWidget {
                         title: 'Nearby',
                         subtitle: 'Share over Wi-Fi or LAN, no internet needed',
                       ),
+                      SizedBox(height: AppSpace.card),
                       const _Feature(
                         icon: HugeIcons.strokeRoundedGlobe02,
                         title: 'Anywhere',
                         subtitle: 'Connect with a 6-digit code',
                       ),
+                      SizedBox(height: AppSpace.card),
                       const _Feature(
                         icon: HugeIcons.strokeRoundedLock,
                         title: 'Private',
                         subtitle: 'Direct device-to-device, nothing uploaded',
                       ),
+                      SizedBox(height: AppSpace.card),
                     ],
                   ),
                 ),
@@ -75,7 +86,9 @@ class OnboardingScreen extends StatelessWidget {
                   width: double.infinity,
                   height: 52,
                   child: FilledButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      context.pushTo(AppRoute.home);
+                    },
                     child: const Text('Get started'),
                   ),
                 ),
@@ -101,38 +114,32 @@ class _Feature extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: context.appThemeColors.brandSubtle,
-              borderRadius: AppRadius.icon,
-            ),
-            child: HugeIcon(icon: icon, color: context.appThemeColors.brand, size: 24),
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: context.appThemeColors.brandSubtle,
+            borderRadius: AppRadius.icon,
           ),
-           SizedBox(width: AppSpace.gap),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: context.textTheme.titleMedium,
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  subtitle,
-                  style: context.textTheme.bodyMedium,
-                ),
-              ],
-            ),
+          child: HugeIcon(
+            icon: icon,
+            color: context.appThemeColors.brand,
+            size: 24,
           ),
-        ],
-      ),
+        ),
+        SizedBox(width: AppSpace.gap),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title, style: context.textTheme.titleMedium),
+              const SizedBox(height: 2),
+              Text(subtitle, style: context.textTheme.bodyMedium),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

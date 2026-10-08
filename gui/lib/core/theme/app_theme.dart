@@ -231,12 +231,10 @@ ThemeData buildAppTheme(Brightness brightness) {
     ),
 
     navigationBarTheme: NavigationBarThemeData(
-      backgroundColor: colors.surface,
-
+      backgroundColor: Colors.transparent,
       elevation: 0,
       shadowColor: Colors.transparent,
       surfaceTintColor: Colors.transparent,
-
       indicatorColor: appColors.brandSubtle,
 
       labelTextStyle: WidgetStateProperty.resolveWith((states) {
@@ -260,3 +258,7 @@ ThemeData buildAppTheme(Brightness brightness) {
     extensions: <ThemeExtension<dynamic>>[appColors],
   );
 }
+
+
+final darkTheme = buildAppTheme(Brightness.dark);
+final lightTheme = buildAppTheme(Brightness.light);
