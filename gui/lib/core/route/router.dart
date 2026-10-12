@@ -1,6 +1,6 @@
 import 'package:flyx/core/route/app_shell.dart';
 import 'package:flyx/core/route/route_config.dart';
-import 'package:flyx/features/home/presentation/home_screen.dart';
+import 'package:flyx/features/home/presentation/view/home_screen.dart';
 import 'package:flyx/features/onboarding/presentation/onboarding_screen.dart';
 import 'package:flyx/features/setting/presentation/setting_screen.dart';
 import 'package:flyx/features/transfer/presentation/transfer_screen.dart';
@@ -49,9 +49,3 @@ GoRouter buildRouter({required bool onboarded}) => GoRouter(
     ),
   ],
 );
-
-// Create the router single instance why?
-// Could cause the error to rebuild the router if whole app state rebuild like theme switch 
-// If called buildRouter called at AppInstanciation in each theme app reinitialization
-// would cause to rebuild router and lost the current route stack
-final router= buildRouter(onboarded: false);

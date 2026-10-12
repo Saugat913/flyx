@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
 abstract final class AppSpace {
-  static const screen = 20.0;
+  static const screenH = 20.0;
+  static const screenV = 8.0;
   static const section = 28.0;
 
   static const card = 16.0;
@@ -12,7 +13,7 @@ abstract final class AppSpace {
 }
 
 abstract final class AppRadius {
-  static const card = BorderRadius.all(Radius.circular(16));
+  static const card = BorderRadius.all(Radius.circular(12));
   static const button = BorderRadius.all(Radius.circular(10));
   static const input = BorderRadius.all(Radius.circular(10));
   static const checkbox = BorderRadius.all(Radius.circular(4));

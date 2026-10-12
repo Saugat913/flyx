@@ -20,3 +20,5 @@ class ThemeController extends ChangeNotifier {
     setTheme(isDark ? ThemeMode.light : ThemeMode.dark);
   }
 }
+
+final themeController= ThemeController();

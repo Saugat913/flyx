@@ -18,7 +18,7 @@ class OnboardingScreen extends StatelessWidget {
       body: SafeArea(
         child: ResponsiveContentWrapper(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpace.screen),
+            padding: const EdgeInsets.symmetric(horizontal: AppSpace.screenH),
             child: Column(
               children: [
                 Expanded(
