@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flyx/core/di/service_locator.dart';
 import 'package:flyx/core/route/router.dart';
 import 'package:flyx/core/theme/app_theme.dart';
 import 'package:flyx/core/theme/theme_controller.dart';
 import 'package:go_router/go_router.dart';
 
-void main(List<String> args) {
+Future<void> main(List<String> args) async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await initDependencies();
   runApp(FlyxApp(router: buildRouter(onboarded: false)));
 }
 
