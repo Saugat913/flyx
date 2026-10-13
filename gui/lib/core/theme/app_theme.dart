@@ -196,7 +196,7 @@ ThemeData buildAppTheme(Brightness brightness) {
       backgroundColor: colors.inverseSurface,
       elevation: 0,
       insetPadding: const EdgeInsets.all(14),
-      shape: const RoundedRectangleBorder(borderRadius: AppRadius.chip),
+      shape: const RoundedRectangleBorder(borderRadius: AppRadius.checkbox),
 
       contentTextStyle: AppText.body.copyWith(
         color: colors.onInverseSurface,
