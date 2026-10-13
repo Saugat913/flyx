@@ -4,11 +4,10 @@ import 'app_colors.dart';
 import 'app_dimensions.dart';
 import 'app_text_theme.dart';
 
-
-
-extension AppThemeExtensions on BuildContext{
+extension AppThemeExtensions on BuildContext {
   ColorScheme get colorScheme => Theme.of(this).colorScheme;
-  AppThemeColors get appThemeColors => Theme.of(this).extension<AppThemeColors>()!;
+  AppThemeColors get appThemeColors =>
+      Theme.of(this).extension<AppThemeColors>()!;
   TextTheme get textTheme => Theme.of(this).textTheme;
 }
 
@@ -191,6 +190,16 @@ ThemeData buildAppTheme(Brightness brightness) {
       }),
     ),
 
+    radioTheme: RadioThemeData(
+      fillColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.selected)) {
+          return appColors.brand;
+        }
+
+        return colors.onSurfaceVariant;
+      }),
+    ),
+
     snackBarTheme: SnackBarThemeData(
       behavior: SnackBarBehavior.floating,
       backgroundColor: colors.inverseSurface,
@@ -258,7 +267,6 @@ ThemeData buildAppTheme(Brightness brightness) {
     extensions: <ThemeExtension<dynamic>>[appColors],
   );
 }
-
 
 final darkTheme = buildAppTheme(Brightness.dark);
 final lightTheme = buildAppTheme(Brightness.light);

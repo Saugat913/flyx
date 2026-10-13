@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flyx/core/di/service_locator.dart';
+import 'package:flyx/core/route/route_config.dart';
+import 'package:flyx/core/route/route_navigation.dart';
 import 'package:flyx/core/services/file_picker_service.dart';
 import 'package:flyx/core/theme/app_dimensions.dart';
 import 'package:flyx/core/theme/app_theme.dart';
@@ -104,7 +106,9 @@ class FileSelectionScreen extends StatelessWidget {
                         ),
                         SizedBox(width: AppSpace.gap),
                         FilledButton(
-                          onPressed: isEmpty ? null : () {},
+                          onPressed: isEmpty ? null : () {
+                            context.pushTo(AppRoute.transferModeSelection);
+                          },
                           child: const Text('Continue'),
                         ),
                       ],
@@ -151,9 +155,9 @@ class FileSelectionScreen extends StatelessWidget {
                         return CheckboxListTile(
                           contentPadding: EdgeInsets.zero,
                           secondary: Container(
-                            padding: EdgeInsets.all(4.0),
+                            padding: EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              borderRadius: AppRadius.card,
+                              borderRadius: AppRadius.icon,
                               color: context.appThemeColors.brandSubtle,
                             ),
                             child: HugeIcon(

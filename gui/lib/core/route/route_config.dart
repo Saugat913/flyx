@@ -3,7 +3,8 @@ enum AppRoute {
   home('/'),
   transfer('/transfer'),
   setting('/setting'),
-  fileSelector('/file-selector');
+  fileSelector('/file-selector'),
+  transferModeSelection('/transfer-mode-selection');
 
   const AppRoute(this.path);
   final String path;
