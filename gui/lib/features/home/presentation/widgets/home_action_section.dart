@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flyx/core/route/route_config.dart';
+import 'package:flyx/core/route/route_navigation.dart';
 import 'package:flyx/core/theme/app_dimensions.dart';
 import 'package:flyx/core/theme/app_palette.dart';
 import 'package:flyx/core/theme/app_theme.dart';
@@ -17,7 +19,9 @@ class HomeActionSection extends StatelessWidget {
           title: 'Send Files',
           subtitle: 'Share to nearby devices or via 6-digit code.',
           icon: HugeIcons.strokeRoundedSend,
-          onTap: () {},
+          onTap: () {
+            context.pushTo(AppRoute.fileSelector);
+          },
         ),
         SizedBox(height: AppSpace.card),
         _ActionButton(
