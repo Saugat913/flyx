@@ -231,7 +231,7 @@ ThemeData buildAppTheme(Brightness brightness) {
       elevation: 0,
       shadowColor: Colors.transparent,
 
-      shape: const RoundedRectangleBorder(borderRadius: AppRadius.sheet),
+      shape: const RoundedRectangleBorder(borderRadius: AppRadius.card),
 
       titleTextStyle: AppText.sectionTitle.copyWith(color: colors.onSurface),
 
