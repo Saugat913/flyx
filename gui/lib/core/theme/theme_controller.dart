@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flyx/core/viewmodel/view_model.dart';
 
-class ThemeController extends ChangeNotifier {
+class ThemeController extends ViewModel {
   ThemeMode _themeMode = ThemeMode.system;
 
   ThemeMode get themeMode => _themeMode;
@@ -13,7 +14,7 @@ class ThemeController extends ChangeNotifier {
     if (_themeMode == mode) return;
 
     _themeMode = mode;
-    notifyListeners();
+    notify();
   }
 
   void toggle() {
@@ -21,4 +22,4 @@ class ThemeController extends ChangeNotifier {
   }
 }
 
-final themeController= ThemeController();
+final themeController = ThemeController();
