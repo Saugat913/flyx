@@ -1,13 +1,15 @@
+import 'package:file_picker/file_picker.dart';
+import 'package:flyx/core/di/service_locator.dart';
+import 'package:flyx/core/services/file_picker_service.dart';
 import 'package:flyx/features/send/data/models/file.dart';
 import 'package:flutter/material.dart';
 
-class SendViewModel extends ChangeNotifier {
+class SendViewModel  {
   SendViewModel();
   final _selectedFiles = ValueNotifier<Set<FileModel>>({});
 
   ValueNotifier<Set<FileModel>> get selectedFiles => _selectedFiles;
-  bool get isSelectedFilesEmpty => _selectedFiles.value.isEmpty;
-  int get selectedFilesCount => _selectedFiles.value.length;
+ 
 
   void addFiles(Iterable<FileModel> files) {
     final updatedFiles = Set<FileModel>.from(_selectedFiles.value);
@@ -22,12 +24,18 @@ class SendViewModel extends ChangeNotifier {
   }
 
   void clear() {
+    FilePicker.clearTemporaryFiles();
     _selectedFiles.value = {};
   }
 
-  @override
-  void dispose() {
-    _selectedFiles.dispose();
-    super.dispose();
+  Future<int> pickFiles() async {
+    final filePickerService = getIt<FilePickerService>();
+    final files = await filePickerService.pickFiles();
+
+    final previousCount = selectedFiles.value.length;
+    _selectedFiles.value.addAll(files);
+
+    return previousCount + files.length;
   }
+
 }

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flyx/core/route/route_config.dart';
+import 'package:flyx/core/route/route_navigation.dart';
 import 'package:flyx/core/theme/app_dimensions.dart';
 import 'package:flyx/core/theme/app_theme.dart';
 import 'package:go_router/go_router.dart';
@@ -7,11 +9,13 @@ import 'package:hugeicons/hugeicons.dart';
 class _TransferMode {
   final String title;
   final String subtitle;
+  final AppRoute route;
   final List<List<dynamic>> icon;
 
   _TransferMode({
     required this.title,
     required this.subtitle,
+    required this.route,
     required this.icon,
   });
 }
@@ -32,11 +36,13 @@ class _TransferModeSelectionScreenState
     _TransferMode(
       title: "Nearby devices",
       subtitle: "Fastest option over the same WI-FI",
+      route: AppRoute.discoverReceiver,
       icon: HugeIcons.strokeRoundedWifi01,
     ),
     _TransferMode(
       title: "6-digit code",
       subtitle: "Pair manually across networks",
+      route: AppRoute.shareCode,
       icon: HugeIcons.strokeRoundedKey01,
     ),
   ];
@@ -58,7 +64,9 @@ class _TransferModeSelectionScreenState
             horizontal: AppSpace.screenH,
             vertical: AppSpace.screenV,
           ),
-          child: FilledButton(onPressed: () {}, child: Text('Continue')),
+          child: FilledButton(onPressed: () {
+            context.pushTo(transferModes[_selectedMode].route);
+          }, child: Text('Continue')),
         ),
       ),
       body: SafeArea(

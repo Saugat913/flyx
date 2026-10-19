@@ -41,7 +41,6 @@ ThemeData buildAppTheme(Brightness brightness) {
       centerTitle: false,
 
       titleTextStyle: AppText.pageTitle.copyWith(color: colors.onSurface),
-
       iconTheme: IconThemeData(color: colors.onSurface, size: 22),
     ),
 

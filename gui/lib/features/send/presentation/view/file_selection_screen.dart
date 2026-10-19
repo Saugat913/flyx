@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flyx/core/di/service_locator.dart';
 import 'package:flyx/core/route/route_config.dart';
 import 'package:flyx/core/route/route_navigation.dart';
-import 'package:flyx/core/services/file_picker_service.dart';
 import 'package:flyx/core/theme/app_dimensions.dart';
 import 'package:flyx/core/theme/app_theme.dart';
 import 'package:flyx/core/utils/formatter.dart';
@@ -14,17 +13,6 @@ import 'package:hugeicons/hugeicons.dart';
 class FileSelectionScreen extends StatelessWidget {
   const FileSelectionScreen({super.key});
 
-  Future<int> _pickFiles(BuildContext context) async {
-    SendViewModel sendViewModel = getIt<SendViewModel>();
-    final filePickerService = getIt<FilePickerService>();
-    final files = await filePickerService.pickFiles();
-
-    final previousCount = sendViewModel.selectedFilesCount;
-    sendViewModel.addFiles(files);
-
-    return previousCount + files.length;
-  }
-
   @override
   Widget build(BuildContext context) {
     SendViewModel sendViewModel = getIt<SendViewModel>();
@@ -34,6 +22,7 @@ class FileSelectionScreen extends StatelessWidget {
       builder: (context, files, _) {
         final selectedFiles = files.toList();
         final isEmpty = selectedFiles.isEmpty;
+        final selectedFileCount=selectedFiles.length;
         final totalSize = selectedFiles.fold<int>(
           0,
           (sum, file) => sum + file.size,
@@ -88,8 +77,8 @@ class FileSelectionScreen extends StatelessWidget {
                         ),
                         OutlinedButton(
                           onPressed: () async {
-                            final pickedCount = await _pickFiles(context);
-                            if (sendViewModel.selectedFilesCount <
+                            final pickedCount = await sendViewModel.pickFiles();
+                            if (selectedFileCount <
                                 pickedCount) {
                               if (!context.mounted) return;
                               ScaffoldMessenger.of(context).showSnackBar(
@@ -140,7 +129,7 @@ class FileSelectionScreen extends StatelessWidget {
                           SizedBox(height: AppSpace.section),
                           FilledButton(
                             onPressed: () async {
-                              await _pickFiles(context);
+                              await sendViewModel.pickFiles();
                             },
                             child: Text('Browse files'),
                           ),
