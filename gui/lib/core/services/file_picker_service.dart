@@ -1,6 +1,6 @@
 import 'package:file_picker/file_picker.dart' as fp;
-import 'package:flyx/features/send/data/models/file.dart';
-import 'package:flyx/features/send/data/models/file_types.dart';
+import 'package:flyx/features/shared/models/file.dart';
+import 'package:flyx/features/shared/models/file_types.dart';
 
 class FilePickerService {
   Future<List<FileModel>> pickFiles() async {

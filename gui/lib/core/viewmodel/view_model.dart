@@ -1,10 +1,52 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
-
+import 'package:flyx/core/di/service_locator.dart';
 
 abstract class ViewModel extends ChangeNotifier {
   @protected
   void notify() => notifyListeners();
+}
+
+/// Ref-counted flow scope that resets & disposes lazy-singleton [T] when the last screen in the flow unmounts.
+class FlowScope<T extends Object> extends StatefulWidget {
+  const FlowScope({super.key, required this.child});
+
+  final Widget child;
+
+  static final Map<Type, int> _activeCounts = {};
+
+  @override
+  State<FlowScope<T>> createState() => _FlowScopeState<T>();
+}
+
+class _FlowScopeState<T extends Object> extends State<FlowScope<T>> {
+  @override
+  void initState() {
+    super.initState();
+    FlowScope._activeCounts[T] = (FlowScope._activeCounts[T] ?? 0) + 1;
+  }
+
+  @override
+  void dispose() {
+    final next = (FlowScope._activeCounts[T] ?? 1) - 1;
+    if (next <= 0) {
+      FlowScope._activeCounts.remove(T);
+      scheduleMicrotask(() {
+        if ((FlowScope._activeCounts[T] ?? 0) <= 0 &&
+            getIt.isRegistered<T>()) {
+          getIt.resetLazySingleton<T>();
+        }
+      });
+    } else {
+      FlowScope._activeCounts[T] = next;
+    }
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
 }
 
 extension ViewModelExtension<T extends Listenable> on T {

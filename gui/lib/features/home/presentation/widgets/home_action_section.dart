@@ -12,25 +12,43 @@ class HomeActionSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        _ActionButton(
-          isPrimary: true,
-          title: 'Send Files',
-          subtitle: 'Share to nearby devices or via 6-digit code.',
-          icon: HugeIcons.strokeRoundedSend,
-          onTap: () {
-            context.pushTo(AppRoute.fileSelector);
-          },
-        ),
-        SizedBox(height: AppSpace.card),
-        _ActionButton(
-          title: 'Receive Files',
-          subtitle: 'Enter a code or wait for a nearby sender.',
-          icon: HugeIcons.strokeRoundedDownload01,
-          onTap: () {},
-        ),
-      ],
+    final sendBtn = _ActionButton(
+      isPrimary: true,
+      title: 'Send Files',
+      subtitle: 'Share to nearby devices or via 6-digit code.',
+      icon: HugeIcons.strokeRoundedSend,
+      onTap: () => context.pushTo(AppRoute.fileSelector),
+    );
+
+    final receiveBtn = _ActionButton(
+      title: 'Receive Files',
+      subtitle: 'Enter a code or wait for a nearby sender.',
+      icon: HugeIcons.strokeRoundedDownload01,
+      onTap: () => context.pushTo(AppRoute.receiveModeSelection),
+    );
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth >= 520) {
+          return IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(child: sendBtn),
+                const SizedBox(width: AppSpace.gap),
+                Expanded(child: receiveBtn),
+              ],
+            ),
+          );
+        }
+        return Column(
+          children: [
+            sendBtn,
+            const SizedBox(height: AppSpace.gap),
+            receiveBtn,
+          ],
+        );
+      },
     );
   }
 }
@@ -48,34 +66,34 @@ class _ActionButton extends StatelessWidget {
   final String subtitle;
   final List<List<dynamic>> icon;
   final VoidCallback onTap;
-
   final bool isPrimary;
 
   @override
   Widget build(BuildContext context) {
-    final backgroundColor = isPrimary
-        ? null
-        : context.colorScheme.surfaceContainer;
+    final scheme = context.colorScheme;
+
+    final backgroundColor = isPrimary ? null : scheme.surfaceContainer;
     final border = isPrimary
         ? null
-        : Border.all(color: context.colorScheme.outlineVariant);
+        : Border.all(color: scheme.outlineVariant);
     final gradient = isPrimary
-        ? LinearGradient(
+        ? const LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              context.appThemeColors.brand,
-              context.appThemeColors.brandSecondary,
+              AppPalette.cyanDark,
+              AppPalette.cyan,
             ],
           )
         : null;
     final iconBackgroundColor = isPrimary
-        ? AppPalette.neutral50.withValues(alpha: 0.16)
-        : context.appThemeColors.brandSubtle;
-    final iconColor = isPrimary
-        ? AppPalette.neutral50
-        : context.appThemeColors.brand;
-    final foregroundColor = isPrimary ? AppPalette.neutral50 : null;
+        ? AppPalette.white.withValues(alpha: 0.18)
+        : scheme.surfaceContainerHigh;
+    final iconColor = isPrimary ? AppPalette.white : scheme.onSurface;
+    final titleColor = isPrimary ? AppPalette.white : scheme.onSurface;
+    final subtitleColor = isPrimary
+        ? AppPalette.white.withValues(alpha: 0.88)
+        : scheme.onSurfaceVariant;
 
     return Material(
       borderRadius: AppRadius.card,
@@ -93,47 +111,49 @@ class _ActionButton extends StatelessWidget {
           child: Stack(
             children: [
               if (isPrimary) const RippleEffect(),
-
               Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpace.card,
-                  vertical: AppSpace.card + AppSpace.row,
-                ),
+                padding: const EdgeInsets.all(AppSpace.card),
                 child: Row(
                   children: [
                     Container(
-                      width: 44,
-                      height: 44,
+                      width: 40,
+                      height: 40,
                       decoration: BoxDecoration(
                         color: iconBackgroundColor,
-                        borderRadius: AppRadius.button,
+                        borderRadius: AppRadius.icon,
                       ),
                       alignment: Alignment.center,
-                      child: HugeIcon(icon: icon, size: 22, color: iconColor),
+                      child: HugeIcon(icon: icon, size: 20, color: iconColor),
                     ),
                     const SizedBox(width: AppSpace.gap),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
                             title,
                             style: context.textTheme.titleMedium?.copyWith(
-                              color: foregroundColor,
-                              fontWeight: FontWeight.w600,
+                              color: titleColor,
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
                           const SizedBox(height: 2),
                           Text(
                             subtitle,
                             style: context.textTheme.bodySmall?.copyWith(
-                              color: foregroundColor,
+                              color: subtitleColor,
                             ),
                           ),
                         ],
                       ),
                     ),
                     const SizedBox(width: AppSpace.row),
+                    HugeIcon(
+                      icon: HugeIcons.strokeRoundedArrowRight01,
+                      size: 18,
+                      color: subtitleColor,
+                    ),
                   ],
                 ),
               ),

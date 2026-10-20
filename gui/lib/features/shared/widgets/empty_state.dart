@@ -17,22 +17,26 @@ class EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = context.colorScheme;
+
     return SizedBox(
       width: double.infinity,
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 48,
-            height: 48,
+            width: 52,
+            height: 52,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: context.appThemeColors.brandSubtle,
-              borderRadius: AppRadius.button,
+              color: scheme.surfaceContainerHigh,
+              borderRadius: AppRadius.card,
+              border: Border.all(color: scheme.outlineVariant),
             ),
             child: HugeIcon(
               icon: icon,
-              size: 22,
-              color: context.appThemeColors.brand,
+              size: 24,
+              color: scheme.onSurfaceVariant,
             ),
           ),
           const SizedBox(height: AppSpace.gap),
@@ -41,12 +45,12 @@ class EmptyState extends StatelessWidget {
             textAlign: TextAlign.center,
             style: context.textTheme.titleSmall,
           ),
-          const SizedBox(height: 2),
+          const SizedBox(height: 4),
           Text(
             subtitle,
             textAlign: TextAlign.center,
             style: context.textTheme.bodySmall?.copyWith(
-              color: context.colorScheme.onSurfaceVariant,
+              color: scheme.onSurfaceVariant,
             ),
           ),
         ],

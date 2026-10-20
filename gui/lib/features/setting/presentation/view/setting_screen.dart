@@ -1,343 +1,227 @@
 import 'package:flutter/material.dart';
+import 'package:flyx/core/di/service_locator.dart';
 import 'package:flyx/core/theme/app_dimensions.dart';
-import 'package:flyx/core/theme/app_palette.dart';
 import 'package:flyx/core/theme/app_theme.dart';
-import 'package:flyx/core/theme/theme_controller.dart';
+import 'package:flyx/core/viewmodel/view_model.dart';
+import 'package:flyx/features/setting/presentation/widgets/profile_card.dart';
+import 'package:flyx/features/setting/presentation/widgets/settings_group.dart';
+import 'package:flyx/features/setting/presentation/widgets/theme_picker.dart';
+import 'package:flyx/features/shared/widgets/responsive_content_wrapper.dart';
+import 'package:flyx/features/transfer/presentation/viewmodel/transfer_history_view_model.dart';
 import 'package:hugeicons/hugeicons.dart';
 
-final deviceName = ValueNotifier("Iphone 7"); 
+export 'package:flyx/features/setting/presentation/widgets/profile_card.dart'
+    show deviceName;
 
 class SettingScreen extends StatelessWidget {
   const SettingScreen({super.key});
 
+  void _soon(BuildContext context) => ScaffoldMessenger.of(context)
+      .showSnackBar(const SnackBar(content: Text('Coming soon')));
+
+  Widget _leadingIcon(BuildContext context, List<List<dynamic>> icon) {
+    final scheme = context.colorScheme;
+    return Container(
+      width: 40,
+      height: 40,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerHigh,
+        borderRadius: AppRadius.icon,
+      ),
+      child: HugeIcon(icon: icon, size: 20, color: scheme.onSurface),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final vm = getIt<TransferHistoryViewModel>();
+    final scheme = context.colorScheme;
+
     return Scaffold(
-      body: SafeArea(
-        child: ListView(
-          padding: EdgeInsets.symmetric(
+      body: SingleChildScrollView(
+        child: ResponsiveContentWrapper(
+          padding: const EdgeInsets.symmetric(
             vertical: AppSpace.screenV,
             horizontal: AppSpace.screenH,
           ),
-          children: [
-            Text("Settings", style: context.textTheme.titleLarge),
-            SizedBox(height: AppSpace.gap),
-            ProfileCard(),
-            SizedBox(height: AppSpace.section),
-            AppearanceSection(),
-            SizedBox(height: AppSpace.section),
-            TransferSection(),
-            SizedBox(height: AppSpace.section),
-            StorageSection(),
-            SizedBox(height: AppSpace.section),
-            AboutSection(),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class ProfileCard extends StatelessWidget {
-  const ProfileCard({super.key});
-
-  Future<void> rename(BuildContext context) async {
-    final c = TextEditingController(text: deviceName.value);
-    final name = await showDialog<String>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text("Rename device"),
-        content: TextField(controller: c, autofocus: true),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: Text("Cancel"),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(dialogContext, c.text.trim()),
-            child: Text("Save"),
-          ),
-        ],
-      ),
-    );
-    c.dispose();
-    if (name != null && name.isNotEmpty) deviceName.value = name;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: context.colorScheme.surfaceContainer,
-      borderRadius: AppRadius.card,
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: () => rename(context),
-        child: Padding(
-          padding: EdgeInsets.symmetric(
-            vertical: AppSpace.gap,
-            horizontal: AppSpace.row,
-          ),
-          child: ValueListenableBuilder(
-            valueListenable: deviceName,
-            builder: (context, name, _) => Row(
-              children: [
-                Container(
-                  height: 30,
-                  width: 30,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: context.colorScheme.primaryFixedDim,
-                  ),
-                  child: Text(
-                    name[0].toUpperCase(),
-                    style: context.textTheme.titleSmall?.copyWith(
-                      color: context.colorScheme.onPrimary,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text('Settings', style: context.textTheme.titleLarge),
+              const SizedBox(height: AppSpace.card),
+              const ProfileCard(),
+              const SizedBox(height: AppSpace.section),
+              Text('Appearance', style: context.textTheme.titleSmall),
+              const SizedBox(height: AppSpace.gap),
+              const ThemePicker(),
+              const SizedBox(height: AppSpace.section),
+              vm.watch(
+                (context, vm) => SettingsGroup(
+                  title: 'Transfer',
+                  children: [
+                    SwitchListTile(
+                      secondary: _leadingIcon(
+                        context,
+                        HugeIcons.strokeRoundedBolt,
+                      ),
+                      title: Text(
+                        'Auto-accept transfers',
+                        style: context.textTheme.titleSmall,
+                      ),
+                      subtitle: Text(
+                        'Skip the confirmation prompt',
+                        style: context.textTheme.bodySmall,
+                      ),
+                      value: vm.autoAccept,
+                      onChanged: vm.setAutoAccept,
+                    ),
+                    SwitchListTile(
+                      secondary: _leadingIcon(
+                        context,
+                        HugeIcons.strokeRoundedShield01,
+                      ),
+                      title: Text(
+                        'Auto-accept trusted peers',
+                        style: context.textTheme.titleSmall,
+                      ),
+                      subtitle: Text(
+                        'Devices you have paired before',
+                        style: context.textTheme.bodySmall,
+                      ),
+                      value: vm.trustedPeers,
+                      onChanged: vm.setTrustedPeers,
+                    ),
+                    SwitchListTile(
+                      secondary: _leadingIcon(
+                        context,
+                        HugeIcons.strokeRoundedVolumeUp,
+                      ),
+                      title: Text(
+                        'Transfer sounds',
+                        style: context.textTheme.titleSmall,
+                      ),
+                      value: vm.transferSounds,
+                      onChanged: vm.setTransferSounds,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: AppSpace.section),
+              vm.select(
+                (vm) => vm.records.length,
+                (context, count) => SettingsGroup(
+                  title: 'Storage',
+                  children: [
+                    ListTile(
+                      leading: _leadingIcon(
+                        context,
+                        HugeIcons.strokeRoundedDownload04,
+                      ),
+                      title: Text(
+                        'Save received to',
+                        style: context.textTheme.titleSmall,
+                      ),
+                      trailing: Text(
+                        'Downloads/Flyx',
+                        style: context.textTheme.bodySmall,
+                      ),
+                    ),
+                    ListTile(
+                      leading: Container(
+                        width: 40,
+                        height: 40,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: scheme.errorContainer,
+                          borderRadius: AppRadius.icon,
+                        ),
+                        child: HugeIcon(
+                          icon: HugeIcons.strokeRoundedDelete02,
+                          size: 20,
+                          color: scheme.error,
+                        ),
+                      ),
+                      title: Text(
+                        'Clear transfer history',
+                        style: context.textTheme.titleSmall?.copyWith(
+                          color: scheme.error,
+                        ),
+                      ),
+                      subtitle: Text(
+                        count == 0
+                            ? 'Nothing to clear'
+                            : '$count ${count == 1 ? 'transfer' : 'transfers'}',
+                        style: context.textTheme.bodySmall?.copyWith(
+                          color: scheme.error.withValues(alpha: 0.8),
+                        ),
+                      ),
+                      enabled: count > 0,
+                      onTap: () {
+                        vm.clearHistory();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Transfer history cleared'),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: AppSpace.section),
+              SettingsGroup(
+                title: 'About',
+                children: [
+                  ListTile(
+                    leading: _leadingIcon(
+                      context,
+                      HugeIcons.strokeRoundedBadgeInfo,
+                    ),
+                    title: Text('Version', style: context.textTheme.titleSmall),
+                    trailing: Text(
+                      '1.0.0',
+                      style: context.textTheme.bodySmall,
                     ),
                   ),
-                ),
-                SizedBox(width: AppSpace.gap),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text("Device Name", style: context.textTheme.bodyLarge),
-                    Text(name, style: context.textTheme.titleMedium),
-                  ],
-                ),
-                Spacer(),
-                HugeIcon(icon: HugeIcons.strokeRoundedArrowRight01),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class SettingsGroup extends StatelessWidget {
-  const SettingsGroup({super.key, required this.title, required this.children});
-
-  final String title;
-  final List<Widget> children;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(title, style: context.textTheme.bodyLarge),
-        SizedBox(height: AppSpace.gap),
-        Material(
-          color: context.colorScheme.surfaceContainer,
-          borderRadius: AppRadius.card,
-          clipBehavior: Clip.antiAlias,
-          child: Column(children: children),
-        ),
-      ],
-    );
-  }
-}
-
-class AppearanceSection extends StatelessWidget {
-  const AppearanceSection({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text("Appearance", style: context.textTheme.bodyLarge),
-        SizedBox(height: AppSpace.gap),
-        ThemePicker(),
-      ],
-    );
-  }
-}
-
-class ThemePicker extends StatelessWidget {
-  const ThemePicker({super.key});
-
-  static const _meta = {
-    ThemeMode.dark: ('Dark', HugeIcons.strokeRoundedMoon02),
-    ThemeMode.light: ('Light', HugeIcons.strokeRoundedSun03),
-    ThemeMode.system: ('System', HugeIcons.strokeRoundedSmartPhone01),
-  };
-
-  @override
-  Widget build(BuildContext context) {
-    return ListenableBuilder(
-      listenable: themeController,
-      builder: (context, _) => Row(
-        spacing: AppSpace.gap,
-        children: [
-          for (final m in ThemeMode.values)
-            Expanded(child: pickerTile(context, m)),
-        ],
-      ),
-    );
-  }
-
-  Widget pickerTile(BuildContext context, ThemeMode mode) {
-    final selected = themeController.themeMode == mode;
-    final (label, icon) = _meta[mode]!;
-    final scheme = context.colorScheme;
-
-    return GestureDetector(
-      onTap: () => themeController.setTheme(mode),
-      child: Column(
-        spacing: 6,
-        children: [
-          AspectRatio(
-            aspectRatio: 1,
-            child: Container(
-              clipBehavior: Clip.antiAlias,
-              decoration: BoxDecoration(borderRadius: AppRadius.card),
-              foregroundDecoration: BoxDecoration(
-                borderRadius: AppRadius.card,
-                border: Border.all(
-                  color: selected
-                      ? context.appThemeColors.brand
-                      : scheme.outlineVariant,
-                  width: selected ? 2 : 1,
-                ),
+                  ListTile(
+                    leading: _leadingIcon(
+                      context,
+                      HugeIcons.strokeRoundedHelpCircle,
+                    ),
+                    title: Text(
+                      'Help & support',
+                      style: context.textTheme.titleSmall,
+                    ),
+                    trailing: HugeIcon(
+                      icon: HugeIcons.strokeRoundedArrowRight01,
+                      size: 18,
+                      color: scheme.onSurfaceVariant,
+                    ),
+                    onTap: () => _soon(context),
+                  ),
+                  ListTile(
+                    leading: _leadingIcon(
+                      context,
+                      HugeIcons.strokeRoundedFingerPrint,
+                    ),
+                    title: Text(
+                      'Privacy policy',
+                      style: context.textTheme.titleSmall,
+                    ),
+                    trailing: HugeIcon(
+                      icon: HugeIcons.strokeRoundedArrowRight01,
+                      size: 18,
+                      color: scheme.onSurfaceVariant,
+                    ),
+                    onTap: () => _soon(context),
+                  ),
+                ],
               ),
-              child: switch (mode) {
-                ThemeMode.dark => ColoredBox(color: AppPalette.black),
-                ThemeMode.light => ColoredBox(color: AppPalette.white),
-                ThemeMode.system => Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Expanded(child: ColoredBox(color: AppPalette.black)),
-                    Expanded(child: ColoredBox(color: AppPalette.white)),
-                  ],
-                ),
-              },
-            ),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            spacing: 4,
-            children: [
-              HugeIcon(
-                icon: icon,
-                size: 16,
-                color: selected ? scheme.primary : scheme.onSurface,
-              ),
-              Text(label, style: context.textTheme.bodyMedium),
             ],
           ),
-        ],
+        ),
       ),
-    );
-  }
-}
-
-class TransferSection extends StatefulWidget {
-  const TransferSection({super.key});
-
-  @override
-  State<TransferSection> createState() => _TransferSectionState();
-}
-
-class _TransferSectionState extends State<TransferSection> {
-  bool autoAccept = false, trustedPeers = true, sounds = true;
-
-  @override
-  Widget build(BuildContext context) {
-    return SettingsGroup(
-      title: "Transfer",
-      children: [
-        SwitchListTile(
-          secondary: HugeIcon(icon: HugeIcons.strokeRoundedBolt),
-          title: Text("Auto-accept transfers"),
-          subtitle: Text("Skip the confirmation prompt"),
-          value: autoAccept,
-          onChanged: (v) => setState(() => autoAccept = v),
-        ),
-        SwitchListTile(
-          secondary: HugeIcon(icon: HugeIcons.strokeRoundedShield01),
-          title: Text("Auto-accept trusted peers"),
-          subtitle: Text("Devices you have paired before"),
-          value: trustedPeers,
-          onChanged: (v) => setState(() => trustedPeers = v),
-        ),
-        SwitchListTile(
-          secondary: HugeIcon(icon: HugeIcons.strokeRoundedVolumeUp),
-          title: Text("Transfer sounds"),
-          value: sounds,
-          onChanged: (v) => setState(() => sounds = v),
-        ),
-      ],
-    );
-  }
-}
-
-class StorageSection extends StatelessWidget {
-  const StorageSection({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return SettingsGroup(
-      title: "Storage",
-      children: [
-        // ValueListenableBuilder(
-        //   valueListenable: TransferRepository.instance.transfersNotifier,
-        //   builder: (context, transfers, _) => ListTile(
-        //     leading: HugeIcon(
-        //       icon: HugeIcons.strokeRoundedCleaningBucket,
-        //       color: context.colorScheme.error,
-        //     ),
-        //     title: Text(
-        //       "Clear transfer history",
-        //       style: TextStyle(color: context.colorScheme.error),
-        //     ),
-        //     subtitle: Text(
-        //       transfers.isEmpty ? "Nothing to clear" : "${transfers.length} transfers",
-        //     ),
-        //     enabled: transfers.isNotEmpty,
-        //     onTap: () {
-        //       TransferRepository.instance.clearHistory();
-        //       ScaffoldMessenger.of(context).showSnackBar(
-        //         SnackBar(content: Text("History cleared")),
-        //       );
-        //     },
-        //   ),
-        // ),
-      ],
-    );
-  }
-}
-
-class AboutSection extends StatelessWidget {
-  const AboutSection({super.key});
-
-  void soon(BuildContext context) => ScaffoldMessenger.of(context)
-      .showSnackBar(SnackBar(content: Text("Coming soon")));
-
-  @override
-  Widget build(BuildContext context) {
-    return SettingsGroup(
-      title: "About",
-      children: [
-        ListTile(
-          leading: HugeIcon(icon: HugeIcons.strokeRoundedBadgeInfo),
-          title: Text("Version"),
-          trailing: Text("1.0.0"), 
-        ),
-        ListTile(
-          leading: HugeIcon(icon: HugeIcons.strokeRoundedHelpCircle),
-          title: Text("Help & support"),
-          trailing: HugeIcon(icon: HugeIcons.strokeRoundedArrowRight01),
-          onTap: () => soon(context),
-        ),
-        ListTile(
-          leading: HugeIcon(icon: HugeIcons.strokeRoundedFingerPrint),
-          title: Text("Privacy policy"),
-          trailing: HugeIcon(icon: HugeIcons.strokeRoundedArrowRight01),
-          onTap: () => soon(context),
-        ),
-      ],
     );
   }
 }

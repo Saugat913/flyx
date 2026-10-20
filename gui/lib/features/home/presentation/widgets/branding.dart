@@ -11,15 +11,21 @@ class Branding extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        SvgPicture.asset(AppImage.logo, width: 50, height: 50,fit: BoxFit.contain,),
+        SvgPicture.asset(
+          AppImage.logo,
+          width: 38,
+          height: 38,
+          fit: BoxFit.contain,
+        ),
+        const SizedBox(width: 8),
         RichText(
           text: TextSpan(
             style: context.textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: context.colorScheme.primary,
+              fontWeight: FontWeight.w800,
+              color: context.colorScheme.onSurface,
             ),
             children: [
-              TextSpan(text: "Fly"),
+              const TextSpan(text: 'Fly'),
               TextSpan(
                 text: 'X',
                 style: TextStyle(color: context.appThemeColors.brand),

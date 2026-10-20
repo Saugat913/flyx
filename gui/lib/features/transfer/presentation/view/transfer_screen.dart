@@ -1,125 +1,96 @@
 import 'package:flutter/material.dart';
+import 'package:flyx/core/di/service_locator.dart';
 import 'package:flyx/core/theme/app_dimensions.dart';
 import 'package:flyx/core/theme/app_theme.dart';
+import 'package:flyx/core/viewmodel/view_model.dart';
+import 'package:flyx/features/shared/models/transfer_record.dart';
 import 'package:flyx/features/shared/widgets/empty_state.dart';
+import 'package:flyx/features/shared/widgets/responsive_content_wrapper.dart';
+import 'package:flyx/features/shared/widgets/transfer_record_tile.dart';
+import 'package:flyx/features/transfer/presentation/viewmodel/transfer_history_view_model.dart';
 import 'package:hugeicons/hugeicons.dart';
-
-
-enum TransferHistoryFilter {
-  all('All'),
-  sent('Sent'),
-  received('Received'),
-  incomplete('Incomplete');
-
-  final String label;
-  const TransferHistoryFilter(this.label);
-}
 
 class TransferScreen extends StatelessWidget {
   const TransferScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final vm = getIt<TransferHistoryViewModel>();
+    final scheme = context.colorScheme;
+
     return Scaffold(
-      body: Padding(
+      body: ResponsiveContentWrapper(
         padding: const EdgeInsets.symmetric(
           vertical: AppSpace.screenV,
           horizontal: AppSpace.screenH,
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text("Transfers",style:context.textTheme.titleLarge),
-            SizedBox(height:AppSpace.gap),
-            TransferHistoryFilterBar(
-              selected: TransferHistoryFilter.all,
-              onChanged: (filter) {
-                
-              },
-            ),
+        child: vm.watch((context, vm) {
+          final records = vm.filteredRecords;
 
-            SizedBox(height: AppSpace.section),
-            SizedBox(height: AppSpace.section),
-
-            TransferHistoryTable(),
-            
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class TransferHistoryFilterBar extends StatefulWidget {
-  const TransferHistoryFilterBar({
-    super.key,
-    required this.selected,
-    required this.onChanged,
-  });
-
-
-  final TransferHistoryFilter selected;
-  final ValueChanged<TransferHistoryFilter> onChanged;
-
-  @override
-  State<TransferHistoryFilterBar> createState() => _TransferHistoryFilterBarState();
-}
-
-class _TransferHistoryFilterBarState extends State<TransferHistoryFilterBar> {
-  
-  late TransferHistoryFilter _selected;
-
-  
-  @override
-  void initState() {
-    _selected = widget.selected;
-    super.initState();
-  }
-  
-  @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: TransferHistoryFilter.values.map((value) {
-          final isSelected= value == _selected;
-          return GestureDetector(
-            onTap: () {
-              setState(() {
-                _selected = value;
-              });
-              widget.onChanged(value);
-            },
-            child: Container(
-              margin: EdgeInsets.symmetric(horizontal: AppSpace.row),
-              padding: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-              decoration: BoxDecoration(
-                borderRadius: AppRadius.icon,
-                color: isSelected ? context.colorScheme.primary : context.colorScheme.surfaceContainer,
-                border: Border.all(
-                  color: isSelected ? context.colorScheme.primary : context.colorScheme.outlineVariant,
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Transfers', style: context.textTheme.titleLarge),
+              const SizedBox(height: AppSpace.card),
+              // Filter tabs
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  spacing: AppSpace.row,
+                  children: TransferHistoryFilter.values.map((filter) {
+                    final isSelected = filter == vm.filter;
+                    return GestureDetector(
+                      onTap: () => vm.setFilter(filter),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 8,
+                          horizontal: 16,
+                        ),
+                        decoration: BoxDecoration(
+                          borderRadius: AppRadius.chip,
+                          color: isSelected
+                              ? scheme.primary
+                              : scheme.surfaceContainer,
+                          border: Border.all(
+                            color: isSelected
+                                ? scheme.primary
+                                : scheme.outlineVariant,
+                          ),
+                        ),
+                        child: Text(
+                          filter.label,
+                          style: context.textTheme.labelLarge?.copyWith(
+                            color: isSelected
+                                ? scheme.onPrimary
+                                : scheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ),
+                    );
+                  }).toList(),
                 ),
               ),
-              child: Text(value.label,style: TextStyle(color: isSelected ? context.colorScheme.onPrimary : null),),
-            ),
+              const SizedBox(height: AppSpace.section),
+              Text('History', style: context.textTheme.titleMedium),
+              const SizedBox(height: AppSpace.gap),
+              Expanded(
+                child: records.isEmpty
+                    ? const Center(
+                        child: EmptyState(
+                          title: 'No transfers yet',
+                          subtitle:
+                              'Files you send or receive will appear here.',
+                          icon: HugeIcons.strokeRoundedInbox,
+                        ),
+                      )
+                    : SingleChildScrollView(
+                        child: TransferRecordGroup(records: records),
+                      ),
+              ),
+            ],
           );
-        }).toList(),
+        }),
       ),
     );
-  }
-}
-
-
-class TransferHistoryTable extends StatelessWidget {
-  const TransferHistoryTable({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return EmptyState(
-      title: 'No transfers found',
-      subtitle: 'No transfers found for the selected filter',
-      icon: HugeIcons.strokeRoundedHistory,
-    ) ;
   }
 }

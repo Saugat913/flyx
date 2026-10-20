@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flyx/core/di/service_locator.dart';
 import 'package:flyx/core/media/images.dart';
 import 'package:flyx/core/route/route_config.dart';
 import 'package:flyx/core/route/route_navigation.dart';
 import 'package:flyx/core/theme/app_dimensions.dart';
 import 'package:flyx/core/theme/app_theme.dart';
+import 'package:flyx/features/shared/widgets/muted.dart';
 import 'package:flyx/features/shared/widgets/responsive_content_wrapper.dart';
 import 'package:hugeicons/hugeicons.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class OnboardingScreen extends StatelessWidget {
   const OnboardingScreen({super.key});
@@ -15,85 +18,85 @@ class OnboardingScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final themeBrightness = Theme.of(context).brightness;
     return Scaffold(
+      bottomNavigationBar: ResponsiveBottomBar(
+        child: SizedBox(
+          width: double.infinity,
+          height: 50,
+          child: FilledButton(
+            onPressed: () async {
+              await getIt<SharedPreferences>().setBool(kOnboardedPrefKey, true);
+              if (context.mounted) {
+                context.goTo(AppRoute.home);
+              }
+            },
+            child: const Text('Get started'),
+          ),
+        ),
+      ),
       body: SafeArea(
-        child: ResponsiveContentWrapper(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpace.screenH),
-            child: Column(
-              children: [
-                Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      LayoutBuilder(
-                        builder: (context, constraints) {
-                          final size = (constraints.maxWidth * 0.6).clamp(
-                            160.0,
-                            240.0,
-                          );
-                          return SizedBox(
-                            width: size,
-                            height: size,
-                            child: SvgPicture.asset(
-                              AppImage.onboarding2,
-                              fit: BoxFit.contain,
-                              colorMapper: AppImage.colorMapper(themeBrightness),
-                            ),
-                          );
-                        },
-                      ),
-                      const SizedBox(height: AppSpace.section),
-                      Text(
-                        'Send files.\nSkip the cloud.',
-                        textAlign: TextAlign.center,
-                        style: context.textTheme.headlineMedium?.copyWith(
-                          fontWeight: FontWeight.w700,
+        child: LayoutBuilder(
+          builder: (context, viewport) => SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: viewport.maxHeight),
+              child: ResponsiveContentWrapper(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpace.screenH,
+                  vertical: AppSpace.section,
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SizedBox(
+                          width: 200,
+                          height: 200,
+                          child: SvgPicture.asset(
+                            AppImage.onboarding2,
+                            fit: BoxFit.contain,
+                            colorMapper: AppImage.colorMapper(themeBrightness),
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
+                        const SizedBox(height: AppSpace.section),
+                        Text(
+                          'Send files.\nSkip the cloud.',
+                          textAlign: TextAlign.center,
+                          style: context.textTheme.headlineMedium?.copyWith(
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: -0.6,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpace.section),
+                    const Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _Feature(
+                          icon: HugeIcons.strokeRoundedWifi01,
+                          title: 'Nearby',
+                          subtitle:
+                              'Share over Wi-Fi or LAN, no internet needed',
+                        ),
+                        SizedBox(height: AppSpace.gap),
+                        _Feature(
+                          icon: HugeIcons.strokeRoundedGlobe02,
+                          title: 'Anywhere',
+                          subtitle: 'Connect with a 6-digit code',
+                        ),
+                        SizedBox(height: AppSpace.gap),
+                        _Feature(
+                          icon: HugeIcons.strokeRoundedLock,
+                          title: 'Private',
+                          subtitle:
+                              'Direct device-to-device, nothing uploaded',
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-
-                Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const _Feature(
-                        icon: HugeIcons.strokeRoundedWifi01,
-                        title: 'Nearby',
-                        subtitle: 'Share over Wi-Fi or LAN, no internet needed',
-                      ),
-                      SizedBox(height: AppSpace.card),
-                      const _Feature(
-                        icon: HugeIcons.strokeRoundedGlobe02,
-                        title: 'Anywhere',
-                        subtitle: 'Connect with a 6-digit code',
-                      ),
-                      SizedBox(height: AppSpace.card),
-                      const _Feature(
-                        icon: HugeIcons.strokeRoundedLock,
-                        title: 'Private',
-                        subtitle: 'Direct device-to-device, nothing uploaded',
-                      ),
-                      SizedBox(height: AppSpace.card),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: AppSpace.section),
-
-                SizedBox(
-                  width: double.infinity,
-                  height: 52,
-                  child: FilledButton(
-                    onPressed: () {
-                      context.pushTo(AppRoute.home);
-                    },
-                    child: const Text('Get started'),
-                  ),
-                ),
-                const SizedBox(height: AppSpace.section),
-              ],
+              ),
             ),
           ),
         ),
@@ -114,32 +117,44 @@ class _Feature extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: context.appThemeColors.brandSubtle,
-            borderRadius: AppRadius.icon,
+    final scheme = context.colorScheme;
+
+    return Container(
+      padding: const EdgeInsets.all(AppSpace.card),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainer,
+        borderRadius: AppRadius.card,
+        border: Border.all(color: scheme.outlineVariant),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: scheme.surfaceContainerHigh,
+              borderRadius: AppRadius.icon,
+            ),
+            child: HugeIcon(
+              icon: icon,
+              color: scheme.onSurface,
+              size: 22,
+            ),
           ),
-          child: HugeIcon(
-            icon: icon,
-            color: context.appThemeColors.brand,
-            size: 24,
+          const SizedBox(width: AppSpace.gap),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: context.textTheme.titleSmall),
+                const SizedBox(height: 2),
+                Muted(subtitle),
+              ],
+            ),
           ),
-        ),
-        SizedBox(width: AppSpace.gap),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(title, style: context.textTheme.titleMedium),
-              const SizedBox(height: 2),
-              Text(subtitle, style: context.textTheme.bodyMedium),
-            ],
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
