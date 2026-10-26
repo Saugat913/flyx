@@ -14,10 +14,8 @@ use tokio::{
 
 use crate::{
     config::Config,
-    core::FileMetaData,
     discover::beacon::{BconPacket, Broadcaster, Finder},
     transfer::{receive_file, send_file},
-    transport::Transport,
     utils::zip::zip_folder,
 };
 

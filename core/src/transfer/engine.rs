@@ -7,7 +7,7 @@ use tokio::{
     io::{AsyncReadExt, AsyncSeekExt, AsyncWriteExt},
 };
 
-use crate::core::{FileMetaData, ProtocolPacket, TransferState};
+use crate::{FileMetaData, ProtocolPacket, TransferState};
 
 use crate::transport::{Transport};
 
