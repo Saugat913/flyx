@@ -2,24 +2,26 @@
 //!
 //! A modular file transfer library supporting both local and global transfers.
 
-pub mod config;
-pub mod core;
-pub mod discover;
-pub mod signaling;
-pub mod transfer;
-pub mod transport;
-pub mod utils;
 pub mod cli;
 
-// Re-export main types for easy access
-pub use config::Config;
+// Re-export main modules and types from core
+pub use flyx_core::{
+    config::{self, Config},
+    discover,
+    error,
+    file::{self, FileMetaData},
+    protocol::{self, ProtocolPacket, TransferState},
+    signaling,
+    transfer::{self, receive_file, send_file},
+    transport::{self, Transport, WebrtcTransport},
+    utils,
+};
+
+// Re-export CLI types
 pub use cli::Cli;
-pub use core::{FileMetaData, ProtocolPacket, TransferState};
-pub use transfer::{receive_file, send_file};
-pub use transport::{Transport, WebrtcTransport};
 
 // Re-export coordinators
-pub use transfer::{
+pub use flyx_core::transfer::{
     global::{Receiver as GlobalReceiver, Sender as GlobalSender},
     local::{Receiver as LocalReceiver, Sender as LocalSender},
 };
